@@ -131,6 +131,7 @@ void ToggleTopMost(HWND hwnd)
             0, 0, 0, 0,
             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE
         );
+		SetOpaque(hwnd, 255);
     }
     else
     {
@@ -141,7 +142,7 @@ void ToggleTopMost(HWND hwnd)
             0, 0, 0, 0,
             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE
         );
-
+		SetOpaque(hwnd, 230);
         ::SetForegroundWindow(hwnd);
     }
 }
