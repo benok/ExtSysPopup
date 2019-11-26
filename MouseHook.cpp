@@ -52,9 +52,12 @@ static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wp, LPARAM lp)
         return ::CallNextHookEx(g_hHook, nCode, wp, lp);
     }
 
+	WriteLog(elDebug, TEXT("%s: MouseHookProc: stage1, wParam=%04x, lParam=%08x"), PLUGIN_NAME, wp, lp);
+
     // マウスカーソルの位置を取得
     const auto pmhs = (MSLLHOOKSTRUCT*)lp;
     const auto pt   = pmhs->pt;
+	WriteLog(elDebug, TEXT("%s: MousePt(%d, %d)"), PLUGIN_NAME, pt.x, pt.y);
 
     // マウスカーソル直下にあるウィンドウのハンドルを取得
     auto hwnd_target = ::WindowFromPoint(pt);
@@ -62,6 +65,8 @@ static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wp, LPARAM lp)
     {
         return ::CallNextHookEx(g_hHook, nCode, wp, lp);
     }
+
+	WriteLog(elDebug, TEXT("%s: MouseHookProc: stage2"), PLUGIN_NAME);
 
     // トップレベルのオーナーウィンドウをさがす
     HWND parent = hwnd_target;
@@ -74,6 +79,8 @@ static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wp, LPARAM lp)
         }
     }
     while ( parent );
+
+	LogHWND(hwnd_target, "MouseHookProc: stage3");
 
     // マウスカーソルがウィンドウ上で設定された範囲にあるか調べる
     RECT rc;
@@ -91,13 +98,17 @@ static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wp, LPARAM lp)
     WriteLog(elDebug, TEXT("%s: %i < %i < %i"), PLUGIN_NAME, x, pt.x, x + w);
     if ( pt.x < x || x + w < pt.x )
     {
-        return ::CallNextHookEx(g_hHook, nCode, wp, lp);
+		WriteLog(elDebug, TEXT("%s: NG"), PLUGIN_NAME);
+		return ::CallNextHookEx(g_hHook, nCode, wp, lp);
     }
     WriteLog(elDebug, TEXT("%s: %i < %i < %i"), PLUGIN_NAME, y, pt.y, y + h);
     if ( pt.y < y || y + h < pt.y )
     {
-        return ::CallNextHookEx(g_hHook, nCode, wp, lp);
+		WriteLog(elDebug, TEXT("%s: NG"), PLUGIN_NAME);
+		return ::CallNextHookEx(g_hHook, nCode, wp, lp);
     }
+
+	WriteLog(elDebug, TEXT("%s: MouseHookProc: stage4"), PLUGIN_NAME);
 
     // ポップアップメニューを表示
     PostMessage(g_hwnd, WM_COMMAND, 0, LPARAM(hwnd_target));
@@ -113,6 +124,8 @@ BOOL WMBeginHook(void)
     if ( g_hHook != nullptr ) { return TRUE; }
 
     g_hHook = ::SetWindowsHookEx(WH_MOUSE, MouseHookProc, g_hInst, 0);
+
+	WriteLog(elDebug, TEXT("%s: WMBeginHook: %x"), PLUGIN_NAME, g_hHook);
 
     return (g_hHook != nullptr) ? TRUE : FALSE;
 }

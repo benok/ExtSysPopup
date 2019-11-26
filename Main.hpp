@@ -21,6 +21,9 @@ BOOL OpenAppFolder(HWND hwnd);
 BOOL SetOpaque    (HWND hwnd, BYTE alpha);
 BOOL SetPriority  (HWND hwnd, INT32 priority);
 
+
+void LogHWND(HWND hwnd, char* context_str);
+
 //---------------------------------------------------------------------------//
 
 // Main.hpp

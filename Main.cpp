@@ -98,6 +98,17 @@ PLUGIN_INFO g_info =
 
 //---------------------------------------------------------------------------//
 
+void LogHWND(HWND hwnd, char* context_str)
+{
+	int text_len = GetWindowTextLength(hwnd);
+	LPSTR win_text = (LPSTR)malloc(text_len + 2);
+	GetWindowText(hwnd, win_text, text_len + 2);
+	if (win_text) {
+		WriteLog(elDebug, TEXT("%s:on %s [%x]%s"), PLUGIN_NAME, context_str, hwnd, win_text);
+		free(win_text);
+	}
+}
+
 void CheckTopMost(HWND hwnd, HMENU hMenu)
 {
     // 常に手前かどうかを取得
@@ -117,6 +128,8 @@ void CheckTopMost(HWND hwnd, HMENU hMenu)
 
 void ToggleTopMost(HWND hwnd)
 {
+	LogHWND(hwnd, "ToggleTopMost");
+
     // 常に手前かどうかを取得
     const auto styleEx = ::GetWindowLongPtr(hwnd, GWL_EXSTYLE);
     const auto topmost = (styleEx & WS_EX_TOPMOST) ? TRUE : FALSE;
@@ -277,6 +290,9 @@ BOOL SetPriority(HWND hwnd, DWORD priority)
 
 void ShowPopup(HWND hwnd, HWND target_hwnd)
 {
+	LogHWND(hwnd, "ShowPopup.hwnd");
+	LogHWND(hwnd, "ShowPopup.target_hwnd");
+
     // リソースからメニューを取得
     const auto hMenu    = ::LoadMenu(g_hInst, MAKEINTRESOURCE(100));
     const auto hSubMenu = ::GetSubMenu(hMenu, 0);
@@ -339,6 +355,9 @@ void ShowPopup(HWND hwnd, HWND target_hwnd)
 
 LRESULT CALLBACK OnCommand(HWND hwnd, HWND target_hwnd)
 {
+	LogHWND(hwnd, "OnCommand.hwnd");
+	LogHWND(target_hwnd, "OnCommand.target_hwnd");
+	
     ShowPopup(hwnd, target_hwnd);
 
     return 0;
