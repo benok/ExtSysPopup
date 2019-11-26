@@ -359,8 +359,14 @@ LRESULT CALLBACK OnCommand(HWND hwnd, HWND target_hwnd)
 	LogHWND(hwnd, "OnCommand.hwnd");
 	LogHWND(target_hwnd, "OnCommand.target_hwnd");
 	
-    ShowPopup(hwnd, target_hwnd);
-
+	if (GetKeyState(VK_SHIFT) < 0) {
+		WriteLog(elDebug, TEXT("%s: ShowPopup()"), PLUGIN_NAME);
+		ShowPopup(hwnd, target_hwnd);
+	} else {
+		WriteLog(elDebug, TEXT("%s: ToggleTopMost()"), PLUGIN_NAME);
+		ToggleTopMost(target_hwnd);
+	}
+    
     return 0;
 }
 
