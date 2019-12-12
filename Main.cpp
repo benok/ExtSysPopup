@@ -109,6 +109,15 @@ void LogHWND(HWND hwnd, char* context_str)
 	}
 }
 
+bool IsTopMost(HWND hwnd)
+{
+	// 常に手前かどうかを取得
+	const auto styleEx = ::GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+	const auto topmost = (styleEx & WS_EX_TOPMOST) ? TRUE : FALSE;
+
+	return topmost;
+}
+
 void CheckTopMost(HWND hwnd, HMENU hMenu)
 {
     // 常に手前かどうかを取得
@@ -131,32 +140,53 @@ void ToggleTopMost(HWND hwnd)
 	LogHWND(hwnd, "ToggleTopMost");
 
     // 常に手前かどうかを取得
-    const auto styleEx = ::GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-    const auto topmost = (styleEx & WS_EX_TOPMOST) ? TRUE : FALSE;
+    const auto topmost = IsTopMost(hwnd);
+
+	bool rc;
 
     // 現在の状態から逆にする
-    if ( topmost )
-    {
-        // 「常に手前」を解除
-        ::SetWindowPos
-        (
-            hwnd, HWND_NOTOPMOST,
-            0, 0, 0, 0,
-            SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE
-        );
-		SetOpaque(hwnd, 255);
+	if (topmost)
+	{
+		// 「常に手前」を解除
+		rc = ::SetWindowPos
+		(
+			hwnd, HWND_NOTOPMOST,
+			0, 0, 0, 0,
+			SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE
+		);
+		WriteLog(elDebug, TEXT("SetWindowPos(%x, HWND_NOTOPMOST,..) returns %d"), hwnd, rc);
+		rc = IsTopMost(hwnd);
+		WriteLog(elDebug, TEXT("IsTopMost(%x)=%d"), hwnd, rc);
+		if (!rc)
+		{
+			SetOpaque(hwnd, 255);
+		}
+		else
+		{
+			WriteLog(elError, "[hwnd:%x] Failed to unset TOPMOST", hwnd);
+		}
     }
     else
     {
         // 「常に手前」を設定
-        ::SetWindowPos
+        rc = ::SetWindowPos
         (
             hwnd, HWND_TOPMOST,
             0, 0, 0, 0,
             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE
         );
-		SetOpaque(hwnd, 230);
-        ::SetForegroundWindow(hwnd);
+		WriteLog(elDebug, TEXT("SetWindowPos(%x, HWND_TOPMOST,..) returns %d"), hwnd, rc);
+		rc = IsTopMost(hwnd);
+		WriteLog(elDebug, TEXT("IsTopMost(%x)=%d"), hwnd, rc);
+		if (rc)
+		{
+			SetOpaque(hwnd, 230);
+			::SetForegroundWindow(hwnd);
+		}
+		else 
+		{
+			WriteLog(elError, "[hwnd:%x] Failed to set TOPMOST", hwnd);
+		}
     }
 }
 
