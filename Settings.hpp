@@ -27,10 +27,17 @@ extern HINSTANCE g_hInst;
 class Settings
 {
 public:
+    UINT mode;
+
     INT32 x;
     INT32 y;
     INT32 w;
     INT32 h;
+
+    UINT title;
+    UINT min;
+    UINT max;
+    UINT close;
 
 public:
     Settings()  { load(); }
@@ -56,10 +63,17 @@ inline void Settings::load()
     ::PathRenameExtensionW(path, L".ini");
 
     // パラメータの取得
-    x = ::GetPrivateProfileIntW(L"Setting", L"x", -32, path);
-    y = ::GetPrivateProfileIntW(L"Setting", L"y",   0, path);
-    w = ::GetPrivateProfileIntW(L"Setting", L"w",  32, path);
-    h = ::GetPrivateProfileIntW(L"Setting", L"h",  32, path);
+    mode = ::GetPrivateProfileIntW(L"Setting", L"mode", 0, path);
+
+    x = ::GetPrivateProfileIntW(L"Setting", L"x",   -32, path);
+    y = ::GetPrivateProfileIntW(L"Setting", L"y",     0, path);
+    w = ::GetPrivateProfileIntW(L"Setting", L"w",    32, path);
+    h = ::GetPrivateProfileIntW(L"Setting", L"h",    32, path);
+
+    title = ::GetPrivateProfileIntW(L"Setting", L"title", 0, path);
+    min   = ::GetPrivateProfileIntW(L"Setting", L"min",   0, path);
+    max   = ::GetPrivateProfileIntW(L"Setting", L"max",   0, path);
+    close = ::GetPrivateProfileIntW(L"Setting", L"close", 0, path);
 }
 
 //---------------------------------------------------------------------------//
@@ -74,6 +88,9 @@ inline void Settings::save()
     ::PathRenameExtensionW(path, L".ini");
 
     // パラメータの書き出し
+    ::wsprintfW(buf, L"%i", mode);
+    ::WritePrivateProfileStringW(L"Setting", L"mode", buf, path);
+
     ::wsprintfW(buf, L"%i", x);
     ::WritePrivateProfileStringW(L"Setting", L"x", buf, path);
 
@@ -85,6 +102,18 @@ inline void Settings::save()
 
     ::wsprintfW(buf, L"%i", h);
     ::WritePrivateProfileStringW(L"Setting", L"h", buf, path);
+
+    ::wsprintfW(buf, L"%i", title);
+    ::WritePrivateProfileStringW(L"Setting", L"title", buf, path);
+
+    ::wsprintfW(buf, L"%i", max);
+    ::WritePrivateProfileStringW(L"Setting", L"max", buf, path);
+
+    ::wsprintfW(buf, L"%i", min);
+    ::WritePrivateProfileStringW(L"Setting", L"min", buf, path);
+
+    ::wsprintfW(buf, L"%i", close);
+    ::WritePrivateProfileStringW(L"Setting", L"close", buf, path);
 }
 
 //---------------------------------------------------------------------------//

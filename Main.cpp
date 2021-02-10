@@ -58,7 +58,7 @@ enum CMD : INT32
 //---------------------------------------------------------------------------//
 
 // プラグインの名前
-LPCTSTR PLUGIN_NAME { TEXT("ExtSysPopup") };
+LPCTSTR PLUGIN_NAME { TEXT("ExtSysPopupCustom") };
 
 // コマンドの数
 DWORD COMMAND_COUNT { CMD_COUNT };
@@ -69,8 +69,8 @@ DWORD COMMAND_COUNT { CMD_COUNT };
 PLUGIN_COMMAND_INFO g_cmd_info[] =
 {
     {
-        TEXT("Show ExtSysPopup"),           // コマンド名（英名）
-        TEXT("ポップアップメニューを表示"), // コマンド説明（日本語）
+        TEXT("Show ExtSysPopupCustom"),     // コマンド名（英名）
+        TEXT("カスタムポップアップを表示"), // コマンド説明（日本語）
         CMD_SHOWPOPUP,                      // コマンドID
         0,                                  // Attr（未使用）
         -1,                                 // ResTd(未使用）

@@ -41,19 +41,37 @@ THE SOFTWARE.
 // フックハンドル
 namespace{ HHOOK g_hHook { nullptr }; }
 
+// ヒットテストの状態を保存
+BOOL g_HoveredState = FALSE;
+
 //---------------------------------------------------------------------------//
 
 // フックプロシージャ
 static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wp, LPARAM lp)
 {
-    //if ( nCode != HC_ACTION || wp != WM_NCRBUTTONUP )
-    if ( wp != WM_NCRBUTTONUP && wp != WM_RBUTTONUP )
+    const auto pmhs = (MOUSEHOOKSTRUCT*)lp;
+    const auto code = pmhs->wHitTestCode;
+
+    if ( settings->mode == 1 && wp == WM_NCHITTEST )
     {
+        g_HoveredState =
+        (
+            ( settings->title && code ==   HTCAPTION ) ||
+            ( settings->min   && code == HTMINBUTTON ) ||
+            ( settings->max   && code == HTMAXBUTTON ) ||
+            ( settings->close && code ==     HTCLOSE )
+        ) ? TRUE : FALSE;
+        return ::CallNextHookEx(g_hHook, nCode, wp, lp);
+    }
+    else if ( wp != WM_NCRBUTTONUP && wp != WM_RBUTTONUP )
+    {
+        return ::CallNextHookEx(g_hHook, nCode, wp, lp);
+    }
+    if ( settings->mode == 1 && !g_HoveredState ) {
         return ::CallNextHookEx(g_hHook, nCode, wp, lp);
     }
 
     // マウスカーソルの位置を取得
-    const auto pmhs = (MSLLHOOKSTRUCT*)lp;
     const auto pt   = pmhs->pt;
 
     // マウスカーソル直下にあるウィンドウのハンドルを取得
@@ -75,28 +93,31 @@ static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wp, LPARAM lp)
     }
     while ( parent );
 
-    // マウスカーソルがウィンドウ上で設定された範囲にあるか調べる
-    RECT rc;
-    ::GetWindowRect(hwnd_target, &rc);
-
-    const auto w = settings->w;
-    const auto h = settings->h;
-
-    INT32 x = settings->x;
-    INT32 y = settings->y;
-
-    x = ( x >= 0 ) ? rc.left + x : rc.right  + x;
-    y = ( y >= 0 ) ? rc.top  + y : rc.bottom + y;
-
-    WriteLog(elDebug, TEXT("%s: %i < %i < %i"), PLUGIN_NAME, x, pt.x, x + w);
-    if ( pt.x < x || x + w < pt.x )
+    if ( settings->mode == 0 )
     {
-        return ::CallNextHookEx(g_hHook, nCode, wp, lp);
-    }
-    WriteLog(elDebug, TEXT("%s: %i < %i < %i"), PLUGIN_NAME, y, pt.y, y + h);
-    if ( pt.y < y || y + h < pt.y )
-    {
-        return ::CallNextHookEx(g_hHook, nCode, wp, lp);
+        // マウスカーソルがウィンドウ上で設定された範囲にあるか調べる
+        RECT rc;
+        ::GetWindowRect(hwnd_target, &rc);
+
+        const auto w = settings->w;
+        const auto h = settings->h;
+
+        INT32 x = settings->x;
+        INT32 y = settings->y;
+
+        x = ( x >= 0 ) ? rc.left + x : rc.right  + x;
+        y = ( y >= 0 ) ? rc.top  + y : rc.bottom + y;
+
+        WriteLog(elDebug, TEXT("%s: %i < %i < %i"), PLUGIN_NAME, x, pt.x, x + w);
+        if ( pt.x < x || x + w < pt.x )
+        {
+            return ::CallNextHookEx(g_hHook, nCode, wp, lp);
+        }
+        WriteLog(elDebug, TEXT("%s: %i < %i < %i"), PLUGIN_NAME, y, pt.y, y + h);
+        if ( pt.y < y || y + h < pt.y )
+        {
+            return ::CallNextHookEx(g_hHook, nCode, wp, lp);
+        }
     }
 
     // ポップアップメニューを表示
